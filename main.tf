@@ -93,8 +93,10 @@ resource "aws_instance" "EC2" {
 
 }
 
-########### create a load balancer
-#
+########### creating a load balancer
+resource "aws_lb" "LB" {
+  
+}
 
 
 
