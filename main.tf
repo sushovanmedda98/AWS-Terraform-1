@@ -95,8 +95,60 @@ resource "aws_instance" "EC2" {
 
 ########### creating a load balancer
 resource "aws_lb" "LB" {
+  name               = "test-lb-tf"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.SG.id]
+  subnets            = [aws_subnet.sub1.id, aws_subnet.sub2.id]
+
+  tags = {
+    Environment = "testing"
+  }
+}
+
+resource "aws_lb_target_group" "TG" {
+    name = "TG"
+    port = 80
+    protocol = "HTTP"
+    vpc_id = aws_vpc.VPC.id
+
+    health_check {
+      path = "/"
+      port = "traffic-port"
+    }
   
 }
+
+resource "aws_lb_target_group_attachment" "attach1" {
+    target_group_arn = aws_lb_target_group.TG.arn
+    target_id = aws_instance.EC1.id
+    port = 80
+  
+}
+resource "aws_lb_target_group_attachment" "attach2" {
+    target_group_arn = aws_lb_target_group.TG.arn
+    target_id = aws_instance.EC2.id
+    port = 80
+  
+}
+
+resource "aws_lb_listener" "listner" {
+    load_balancer_arn = aws_lb.LB.arn
+    port = 80
+    protocol = "HTTP"
+
+    default_action {
+      target_group_arn = aws_lb_target_group.TG.arn
+      type = "forward"
+    }
+}
+
+output "loadbalancerdns" {
+    value = aws_lb.LB.dns_name
+  
+}
+    
+
 
 
 
